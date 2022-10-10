@@ -3,7 +3,7 @@
 }
 
 .App-logo {
-  height: 40vmin;
+  height: 30vmin;
   pointer-events: none;
 }
 
@@ -11,6 +11,67 @@
   .App-logo {
     animation: App-logo-spin infinite 20s linear;
   }
+}
+
+.Control-buttons-wrapper {
+  display: flex;
+  height: 50px;
+  width: 300px;
+  align-items: center;
+  font-size: 14px;
+  flex-direction: column;
+}
+
+.Control-buttons-line {
+  display: flex;
+  width: 100%;
+  height: 50px;
+  justify-content: center;
+  flex-direction: row;
+  margin-bottom: 10px;
+}
+
+.Control-button {
+  margin: 10px;
+  width: 50px;
+  height: 50px;
+  background-color: darkcyan;
+  border-radius: 25px;
+  size: 10px;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+.Connect-button {
+  margin: 50px;
+  background-color: olivedrab;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  width: 100px;
+  height: 50px;
+}
+
+.Red-button {
+  margin: 50px;
+  background-color: maroon;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  width: 100px;
+  height: 50px;
+}
+
+.Canvas {
+  border: 1px solid #d3d3d3;
+  border-radius: 10px;
+}
+
+.None {
+  display: none;
 }
 
 .App-header {
