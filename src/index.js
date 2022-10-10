@@ -4,10 +4,17 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+const intervals = {
+    leftBtnStateReporter: undefined,
+    rightBtnStateReporter: undefined,
+    upBtnStateReporter: undefined,
+    downBtnStateReporter: undefined
+}
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+    <App intervals={intervals}/>
   </React.StrictMode>
 );
 
