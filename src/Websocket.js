@@ -36,6 +36,7 @@ export function useSocket(){
         socket.onclose = (event) => {
             console.log("Socket Closed")
             setSocketConnected(false)
+            setSocket(undefined)
             onMessageCallback({action: "close"})
         }
 
