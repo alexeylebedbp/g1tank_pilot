@@ -25,7 +25,7 @@ class KeyBoardController {
     intervalFactory = (command) => {
         return setInterval(() => {
             if (this.ws) {
-                console.log("Sending ws")
+                console.log("Sending move command:", command)
                 this.ws.send(JSON.stringify({
                     action: wsConst.outMessages.move,
                     direction: this.mapCommandToDirection(command),
@@ -86,20 +86,12 @@ class KeyBoardController {
     }
 
     handleMouseUp = (e) => {
-        // console.log("Mouse Up")
         this.ioUp(e)
     }
 
     handleMouseDown = (e) => {
-        // console.log("Mouse Down")
         this.ioDown(e)
-
     }
-
-    handleKeyboardDown = (event) => {
-        console.log("KeyDown:", event.code)
-        this.ioDown(this.mapEvent(event.code))
-    };
 
     mapEvent = (eventCode) => {
         if (eventCode === "ArrowUp") {
@@ -116,8 +108,13 @@ class KeyBoardController {
     }
 
     handleKeyboardUp = (event) => {
-        // console.log("KeyUp:", event.code)
+        console.log("KeyUp:", event.code)
         this.ioUp(this.mapEvent(event.code))
+    };
+
+    handleKeyboardDown = (event) => {
+        console.log("KeyDown:", event.code)
+        this.ioDown(this.mapEvent(event.code))
     };
 
     handleClick = (e) => {
@@ -131,7 +128,6 @@ class KeyBoardController {
 }
 
 function App() {
-
     const {connectSocket, socket, socketConnected} = useSocket()
     const [carConnected, setCarConnected] = useState(false)
     const [keyboardController, setKeyboardController] = useState(undefined)
@@ -140,17 +136,19 @@ function App() {
     const handleMouseUp = keyboardController ? keyboardController.handleMouseUp : undefined
     const handleClick = keyboardController ? keyboardController.handleClick : undefined
 
-    const onMessage = (message) => {
+    const onMessage = useCallback((message) => {
         if (message.action === wsConst.inMessages.car_control_obtained) {
             setCarConnected(true)
-        } else if (message.action === "close") {
+        } else if(message.action === wsConst.inMessages.failed_to_obtain_car_control){
+            console.log("failed_to_obtain_car_control")
+        } else if (message.action === wsConst.inMessages.close) {
             console.log("WS Closed")
             keyboardController && document.removeEventListener("keydown", keyboardController.handleKeyboardDown, false);
             keyboardController && document.removeEventListener("keyup", keyboardController.handleKeyboardUp, false);
             setCarConnected(false)
             setKeyboardController(undefined)
         }
-    }
+    }, [socketConnected])
 
     useEffect(() => {
         socket &&
@@ -186,11 +184,9 @@ function App() {
         }))
     }, [socket])
 
-
     const onConnectClick = () => {
         connectSocket(onMessage)
     }
-
 
     return (
         <div className="App">

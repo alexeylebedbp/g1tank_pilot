@@ -12,6 +12,8 @@ export const wsConst = {
     inMessages: {
         ping: "__ping__",
         red: "red",
-        car_control_obtained: "car_control_obtained"
+        car_control_obtained: "car_control_obtained",
+        failed_to_obtain_car_control: "failed_to_obtain_car_control",
+        close: "close"
     }
 }
