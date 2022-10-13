@@ -140,13 +140,14 @@ function App() {
         if (message.action === wsConst.inMessages.car_control_obtained) {
             setCarConnected(true)
         } else if(message.action === wsConst.inMessages.failed_to_obtain_car_control){
-            console.log("failed_to_obtain_car_control")
+            console.warn("failed_to_obtain_car_control")
         } else if (message.action === wsConst.inMessages.close) {
-            console.log("WS Closed")
             keyboardController && document.removeEventListener("keydown", keyboardController.handleKeyboardDown, false);
             keyboardController && document.removeEventListener("keyup", keyboardController.handleKeyboardUp, false);
             setCarConnected(false)
             setKeyboardController(undefined)
+        } else if(message.action === "car_disconnected"){
+            setCarConnected(false)
         }
     }, [socketConnected])
 
@@ -185,7 +186,10 @@ function App() {
     }, [socket])
 
     const onConnectClick = () => {
-        connectSocket(onMessage)
+        console.log("Connecting to the server...")
+        connectSocket(onMessage).catch(()=>{
+            console.log("Couldn't establish websocket connection. No response from the server.")
+        })
     }
 
     return (
