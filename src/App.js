@@ -6,34 +6,94 @@ import {MoveCommandButton} from "./MoveCommandButton"
 import {useSocket} from "./Websocket"
 import {wsConst} from "./credentials"
 
-function App(props) {
+class KeyBoardController {
 
-    let {intervals: {leftBtnStateReporter, rightBtnStateReporter, upBtnStateReporter, downBtnStateReporter}} = props
-    const {connectSocket, socket, socketConnected} = useSocket()
-    const [carConnected, setCarConnected] = useState(false)
+    constructor(ws) {
+        this.ws = ws
+        this.leftBtnStateReporter = undefined
+        this.rightBtnStateReporter = undefined
+        this.upBtnStateReporter = undefined
+        this.downBtnStateReporter =  undefined
+    }
 
-    const onMessage = (message) => {
-        if (message.action === wsConst.inMessages.car_control_obtained) {
-            setCarConnected(true)
-        } else if (message.action === "close") {
-            setCarConnected(false)
+    mapCommandToDirection = (command) => {
+        if (command === "left" || command === "right") return command
+        if (command === "up") return "forward"
+        if (command === "down") return "backward"
+    }
+
+    intervalFactory = (command) => {
+        return setInterval(() => {
+            if (this.ws) {
+                console.log("Sending move command:", command)
+                this.ws.send(JSON.stringify({
+                    action: wsConst.outMessages.move,
+                    direction: this.mapCommandToDirection(command),
+                    pilot_id: wsConst.pilot_id
+                }))
+            }
+        }, 1000/wsConst.frequency)
+    }
+
+    send = (command) => {
+        if (command === "left") {
+            if (!this.leftBtnStateReporter && this.ws) {
+                this.leftBtnStateReporter = this.intervalFactory(command)
+            }
+        } else if (command === "right") {
+            if (!this.rightBtnStateReporter && this.ws) {
+                this.rightBtnStateReporter = this.intervalFactory(command)
+            }
+        } else if (command === "up") {
+            if (!this.upBtnStateReporter && this.ws) {
+                this.upBtnStateReporter = this.intervalFactory(command)
+            }
+        } else if (command === "down") {
+            if (!this.downBtnStateReporter && this.ws) {
+                this.downBtnStateReporter = this.intervalFactory(command)
+            }
         }
     }
 
-    useEffect(() => {
-        socket && document.addEventListener("keydown", handleKeyboardDown, false);
-        socket && document.addEventListener("keyup", handleKeyboardUp, false);
-    }, [socket])
-
-    useEffect(() => {
-        return () => {
-            document.removeEventListener("keydown", handleKeyboardDown, false);
-            document.removeEventListener("keyup", handleKeyboardUp, false);
+    ioUp = (e) => {
+        if (!e) return
+        if (e.target.id === "left") {
+            this.leftBtnStateReporter && clearInterval(this.leftBtnStateReporter)
+            this.leftBtnStateReporter = undefined
+        } else if (e.target.id === "right") {
+            this.rightBtnStateReporter && clearInterval(this.rightBtnStateReporter)
+            this.rightBtnStateReporter = undefined
+        } else if (e.target.id === "up") {
+            this.upBtnStateReporter && clearInterval(this.upBtnStateReporter)
+            this.upBtnStateReporter = undefined
+        } else if (e.target.id === "down") {
+            this.downBtnStateReporter && clearInterval(this.downBtnStateReporter)
+            this.downBtnStateReporter = undefined
         }
-    }, [])
+    }
 
+    ioDown = (e) => {
+        if (!e) return
+        if (e.target.id === "left") {
+            this.send("left")
+        } else if (e.target.id === "right") {
+            this.send("right")
+        } else if (e.target.id === "up") {
+            this.send("up")
+        } else if (e.target.id === "down") {
+            this.send("down")
+        }
+    }
 
-    const mapEvent = (eventCode) => {
+    handleMouseUp = (e) => {
+        this.ioUp(e)
+    }
+
+    handleMouseDown = (e) => {
+        this.ioDown(e)
+    }
+
+    mapEvent = (eventCode) => {
         if (eventCode === "ArrowUp") {
             return {target: {id: "up"}}
         } else if (eventCode === "ArrowDown") {
@@ -47,46 +107,74 @@ function App(props) {
         }
     }
 
-    const mapCommandToDirection = (command) => {
-        if (command === "left" || command === "right") return command
-        if (command === "up") return "forward"
-        if (command === "down") return "backward"
+    handleKeyboardUp = (event) => {
+        console.log("KeyUp:", event.code)
+        this.ioUp(this.mapEvent(event.code))
+    };
+
+    handleKeyboardDown = (event) => {
+        console.log("KeyDown:", event.code)
+        this.ioDown(this.mapEvent(event.code))
+    };
+
+    handleClick = (e) => {
+        if (!e.target) return
+        this.ws.send(JSON.stringify({
+            action: wsConst.outMessages.move,
+            direction: this.mapCommandToDirection(e.target.id),
+            pilot_id: wsConst.pilot_id
+        }))
     }
+}
 
-    const intervalFactory = (command) => {
-        return setInterval(() => {
-            if (socket) {
-                console.log("Sending ws")
-                socket.send(JSON.stringify({
-                    action: wsConst.outMessages.move,
-                    direction: mapCommandToDirection(command),
-                    pilot_id: wsConst.pilot_id
-                }))
-            }
-        }, 200)
-    }
+function App() {
+    const {connectSocket, socket, socketConnected} = useSocket()
+    const [carConnected, setCarConnected] = useState(false)
+    const [keyboardController, setKeyboardController] = useState(undefined)
 
-    const send = (command) => {
-        if (command === "left") {
-            if (!leftBtnStateReporter && socket) {
-                leftBtnStateReporter = intervalFactory(command)
-            }
-        } else if (command === "right") {
-            if (!rightBtnStateReporter && socket) {
-                rightBtnStateReporter = intervalFactory(command)
-            }
-        } else if (command === "up") {
-            if (!upBtnStateReporter && socket) {
-                upBtnStateReporter = intervalFactory(command)
-            }
+    const handleMouseDown = keyboardController ? keyboardController.handleMouseDown : undefined
+    const handleMouseUp = keyboardController ? keyboardController.handleMouseUp : undefined
+    const handleClick = keyboardController ? keyboardController.handleClick : undefined
 
-        } else if (command === "down") {
-            if (!downBtnStateReporter && socket) {
-                downBtnStateReporter = intervalFactory(command)
-            }
-
+    const onMessage = useCallback((message) => {
+        if (message.action === wsConst.inMessages.car_control_obtained) {
+            setCarConnected(true)
+        } else if(message.action === wsConst.inMessages.failed_to_obtain_car_control){
+            console.warn("failed_to_obtain_car_control")
+        } else if (message.action === wsConst.inMessages.close) {
+            keyboardController && document.removeEventListener("keydown", keyboardController.handleKeyboardDown, false);
+            keyboardController && document.removeEventListener("keyup", keyboardController.handleKeyboardUp, false);
+            setCarConnected(false)
+            setKeyboardController(undefined)
+        } else if(message.action === "car_disconnected"){
+            setCarConnected(false)
         }
-    }
+    }, [socketConnected])
+
+    useEffect(() => {
+        socket &&
+        socketConnected &&
+        carConnected &&
+        setKeyboardController(new KeyBoardController(socket))
+    }, [socket, socketConnected, carConnected])
+
+    useEffect(()=> {
+        if(keyboardController){
+            document.addEventListener("keydown", keyboardController.handleKeyboardDown, false);
+            document.addEventListener("keyup", keyboardController.handleKeyboardUp, false);
+        }
+    }, [keyboardController])
+
+
+    useEffect(() => {
+        return () => {
+            if(keyboardController){
+                document.removeEventListener("keydown", keyboardController.handleKeyboardDown, false);
+                document.removeEventListener("keyup", keyboardController.handleKeyboardUp, false);
+            }
+        }
+    }, [keyboardController])
+
 
     const getCarControl = useCallback(() => {
         socket &&
@@ -97,78 +185,11 @@ function App(props) {
         }))
     }, [socket])
 
-
     const onConnectClick = () => {
-        connectSocket(onMessage)
-    }
-
-    const ioUp = (e) => {
-        if (!e) return
-        if (e.target.id === "left") {
-            leftBtnStateReporter && clearInterval(leftBtnStateReporter)
-            leftBtnStateReporter = undefined
-        } else if (e.target.id === "right") {
-            rightBtnStateReporter && clearInterval(rightBtnStateReporter)
-            rightBtnStateReporter = undefined
-        } else if (e.target.id === "up") {
-            upBtnStateReporter && clearInterval(upBtnStateReporter)
-            upBtnStateReporter = undefined
-        } else if (e.target.id === "down") {
-            downBtnStateReporter && clearInterval(downBtnStateReporter)
-            downBtnStateReporter = undefined
-        }
-    }
-
-    const ioDown = (e) => {
-        if (!e) return
-        if (e.target.id === "left") {
-            send("left", socket)
-        } else if (e.target.id === "right") {
-            send("right", socket)
-        } else if (e.target.id === "up") {
-            send("up", socket)
-        } else if (e.target.id === "down", socket) {
-            send("down", socket)
-        }
-    }
-
-    const handleMouseUp = (e) => {
-        // console.log("Mouse Up")
-        ioUp(e)
-    }
-
-    const handleMouseDown = (e) => {
-        // console.log("Mouse Down")
-        ioDown(e)
-
-    }
-
-    const handleKeyboardDown = (event) => {
-        // console.log("KeyDown:", event.code)
-        ioDown(mapEvent(event.code))
-    };
-
-
-    const handleKeyboardUp = (event) => {
-        // console.log("KeyUp:", event.code)
-        ioUp(mapEvent(event.code))
-    };
-
-    const handleClick = (e) => {
-        if (!e.target) return
-        let interval = setInterval(() => {
-            if (socket) {
-                console.log("Sending ws")
-                socket.send(JSON.stringify({
-                    action: wsConst.outMessages.move,
-                    direction: mapCommandToDirection(e.target.id),
-                    pilot_id: wsConst.pilot_id
-                }))
-            }
-        }, 200)
-        setTimeout(() => {
-            clearInterval(interval)
-        }, 500)
+        console.log("Connecting to the server...")
+        connectSocket(onMessage).catch(()=>{
+            console.log("Couldn't establish websocket connection. No response from the server.")
+        })
     }
 
     return (
@@ -188,16 +209,32 @@ function App(props) {
                 </button>
                 <div className={carConnected ? "Control-buttons-wrapper" : "None"}>
                     <div className={"Control-buttons-line"}>
-                        <MoveCommandButton name={"up"} handleMouseDown={handleMouseDown} handleMouseUp={handleMouseUp}
-                                           handleClick={handleClick}/>
+                        <MoveCommandButton
+                            name={"up"}
+                            handleMouseDown={handleMouseDown}
+                            handleMouseUp={handleMouseUp}
+                            handleClick={handleClick}
+                        />
                     </div>
                     <div className={"Control-buttons-line"}>
-                        <MoveCommandButton name={"left"} handleMouseDown={handleMouseDown} handleMouseUp={handleMouseUp}
-                                           handleClick={handleClick}/>
-                        <MoveCommandButton name={"down"} handleMouseDown={handleMouseDown} handleMouseUp={handleMouseUp}
-                                           handleClick={handleClick}/>
-                        <MoveCommandButton name={"right"} handleMouseDown={handleMouseDown}
-                                           handleMouseUp={handleMouseUp} handleClick={handleClick}/>
+                        <MoveCommandButton
+                            name={"left"}
+                            handleMouseDown={handleMouseDown}
+                            handleMouseUp={handleMouseUp}
+                            handleClick={handleClick}
+                        />
+                        <MoveCommandButton
+                            name={"down"}
+                            handleMouseDown={handleMouseDown}
+                            handleMouseUp={handleMouseUp}
+                            handleClick={handleClick}
+                        />
+                        <MoveCommandButton
+                            name={"right"}
+                            handleMouseDown={handleMouseDown}
+                            handleMouseUp={handleMouseUp}
+                            handleClick={handleClick}
+                        />
                     </div>
                 </div>
             </header>
