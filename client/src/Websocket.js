@@ -6,7 +6,7 @@ export function useSocket(){
     const [socketConnected, setSocketConnected] =  useState(false)
 
     const _connect = (onMessageCallback, timeout, resolve) => {
-        const socket = new WebSocket(wsConst.address)
+        const socket = new WebSocket(wsConst.addressTest)
         socket.onopen = (event) => {
             console.log("Socket Connected")
             clearTimeout(timeout)
@@ -16,6 +16,9 @@ export function useSocket(){
                 action: wsConst.outMessages.auth_session,
                 pilot_id: wsConst.pilot_id
             }))
+            socket.send(JSON.stringify({
+                action: "webrtc_can_answer",
+            }))
         }
 
         socket.onerror = (event) => {
@@ -23,14 +26,14 @@ export function useSocket(){
         }
 
         socket.onmessage = (event) => {
-            console.log(event.data);
             if(event.data === wsConst.inMessages.ping){
                 socket.send(wsConst.outMessages.pong);
             } else if(event.data === wsConst.inMessages.red){
                 console.log("Poor network detected")
             }  else {
                 const message = JSON.parse(event.data)
-                onMessageCallback(message)
+                console.log(message.action)
+                onMessageCallback(message, socket)
             }
         }
 

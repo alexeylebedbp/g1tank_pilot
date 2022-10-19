@@ -53,7 +53,7 @@ export function Canvas(){
         <canvas
             id="myCanvas"
             width="600"
-            height="400"
+            height="450"
             className={"Canvas"}
         />
     )
