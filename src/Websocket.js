@@ -6,7 +6,7 @@ export function useSocket(){
     const [socketConnected, setSocketConnected] =  useState(false)
 
     const _connect = (onMessageCallback, timeout, resolve) => {
-        const socket = new WebSocket(wsConst.addressTest)
+        const socket = new WebSocket(wsConst.address)
         socket.onopen = (event) => {
             console.log("Socket Connected")
             clearTimeout(timeout)

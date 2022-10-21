@@ -148,8 +148,11 @@ function App() {
 
     const onMessage = (message, transport) => {
         if (message.action === wsConst.inMessages.car_control_obtained) {
-            setPeerConnection(createWebRtcPeerConnection(transport))
             setCarConnected(true)
+            transport.send(JSON.stringify({
+                action: "offer_request",
+                pilot_id: wsConst.pilot_id
+            }))
         } else if(message.action === wsConst.inMessages.failed_to_obtain_car_control){
             console.warn("failed_to_obtain_car_control")
         } else if (message.action === wsConst.inMessages.close) {
@@ -167,7 +170,8 @@ function App() {
                     transport.send(JSON.stringify({
                         action: "webrtc_answer",
                         sdp: answer.sdp,
-                        type: answer.type
+                        type: answer.type,
+                        pilot_id: wsConst.pilot_id
                     }))
                     console.log(_peerConnection.peerConnection.signalingState)
                     setPeerConnection(_peerConnection)

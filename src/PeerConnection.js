@@ -67,7 +67,16 @@ class WebRtcPeerConnectionImpl {
             let $this = this;
             (function loop() {
                 if (!$this.paused && !$this.ended) {
-                    canvas.getContext("2d").drawImage($this, 0, 0, canvas.width, canvas.height);
+                    const ctx = canvas.getContext("2d")
+                    // ctx.scale(-1, 1);
+                    // ctx.save();
+                    // ctx.rotate(180 * Math.PI/180);
+                    // ctx.drawImage($this, 0, -canvas.height, canvas.width, canvas.height);
+                    // ctx.restore();
+                    ctx.save();
+                    ctx.rotate(180 * Math.PI/180);
+                    ctx.drawImage($this, -canvas.width, -canvas.height, canvas.width, canvas.height);
+                    ctx.restore();
                     setTimeout(loop, 1000 / 30); // drawing at 30fps
                 }
             })();
