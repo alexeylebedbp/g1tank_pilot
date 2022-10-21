@@ -1,10 +1,11 @@
 import logo from './logo.svg';
 import './App.css';
-import {useEffect, useState, useCallback} from "react"
+import {useEffect, useState, useCallback, useRef} from "react"
 import {Canvas} from "./Canvas"
 import {MoveCommandButton} from "./MoveCommandButton"
 import {useSocket} from "./Websocket"
 import {wsConst} from "./credentials"
+import {createWebRtcPeerConnection} from "./PeerConnection"
 
 class KeyBoardController {
 
@@ -127,18 +128,31 @@ class KeyBoardController {
     }
 }
 
+function usePrevious(value) {
+    const ref = useRef();
+    useEffect(() => {
+        ref.current = value;
+    });
+    return ref.current;
+}
+
 function App() {
     const {connectSocket, socket, socketConnected} = useSocket()
     const [carConnected, setCarConnected] = useState(false)
     const [keyboardController, setKeyboardController] = useState(undefined)
+    const [peerConnection, setPeerConnection] = useState(undefined)
 
     const handleMouseDown = keyboardController ? keyboardController.handleMouseDown : undefined
     const handleMouseUp = keyboardController ? keyboardController.handleMouseUp : undefined
     const handleClick = keyboardController ? keyboardController.handleClick : undefined
 
-    const onMessage = useCallback((message) => {
+    const onMessage = (message, transport) => {
         if (message.action === wsConst.inMessages.car_control_obtained) {
             setCarConnected(true)
+            transport.send(JSON.stringify({
+                action: "offer_request",
+                pilot_id: wsConst.pilot_id
+            }))
         } else if(message.action === wsConst.inMessages.failed_to_obtain_car_control){
             console.warn("failed_to_obtain_car_control")
         } else if (message.action === wsConst.inMessages.close) {
@@ -148,8 +162,25 @@ function App() {
             setKeyboardController(undefined)
         } else if(message.action === "car_disconnected"){
             setCarConnected(false)
+        } else if(message.action === wsConst.inMessages.webrtc_offer){
+                const _peerConnection = createWebRtcPeerConnection(transport)
+                transport.peerConnection = _peerConnection
+                const remoteSDP = message.sdp
+                _peerConnection.answerCall(remoteSDP).then(answer => {
+                    transport.send(JSON.stringify({
+                        action: "webrtc_answer",
+                        sdp: answer.sdp,
+                        type: answer.type,
+                        pilot_id: wsConst.pilot_id
+                    }))
+                    console.log(_peerConnection.peerConnection.signalingState)
+                    setPeerConnection(_peerConnection)
+                })
+        } else if(message.action === wsConst.inMessages.offer_ice){
+            transport.peerConnection.onRemoteIceCandidate(message)
         }
-    }, [socketConnected])
+    }
+
 
     useEffect(() => {
         socket &&
@@ -157,6 +188,7 @@ function App() {
         carConnected &&
         setKeyboardController(new KeyBoardController(socket))
     }, [socket, socketConnected, carConnected])
+
 
     useEffect(()=> {
         if(keyboardController){
@@ -175,6 +207,13 @@ function App() {
         }
     }, [keyboardController])
 
+    const stopServer = () => {
+        socket &&
+        socket.send(JSON.stringify({action: "byebye", pilot_id: wsConst.pilot_id}))
+        peerConnection &&
+        peerConnection.cleanup()
+        setPeerConnection(undefined)
+    }
 
     const getCarControl = useCallback(() => {
         socket &&
@@ -185,10 +224,11 @@ function App() {
         }))
     }, [socket])
 
+
     const onConnectClick = () => {
-        console.log("Connecting to the server...")
-        connectSocket(onMessage).catch(()=>{
-            console.log("Couldn't establish websocket connection. No response from the server.")
+        connectSocket(onMessage)
+        .catch((e)=>{
+            console.log("Couldn't establish websocket connection. No response from the server.", e)
         })
     }
 
@@ -196,7 +236,9 @@ function App() {
         <div className="App">
             <header className="App-header">
                 <Canvas/>
-                <p>G1 Tank Pilot</p>
+                <p onClick={stopServer}>
+                    G1 Tank Pilot
+                </p>
                 <button
                     className={!socketConnected ? "Connect-button" : "None"}
                     onClick={onConnectClick}>
