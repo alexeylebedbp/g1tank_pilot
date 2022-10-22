@@ -7,15 +7,20 @@ export const wsConst = {
     outMessages: {
         auth_session: "auth_session",
         get_car_control: "get_car_control",
+        webrtc_can_answer: "webrtc_can_answer",
         pong: "__pong__",
         move: "move",
-        answer_ice: "answer_ice"
+        webrtc_answer: "webrtc_answer",
+        answer_ice: "answer_ice",
+        offer_request: "offer_request",
+        byebye: "byebye"
     },
     inMessages: {
         ping: "__ping__",
         red: "red",
         car_control_obtained: "car_control_obtained",
         failed_to_obtain_car_control: "failed_to_obtain_car_control",
+        car_disconnected: "car_disconnected",
         close: "close",
         webrtc_offer: "webrtc_offer",
         offer_ice: "offer_ice"

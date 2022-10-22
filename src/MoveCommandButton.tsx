@@ -1,6 +1,7 @@
-import React, {useEffect, useState} from "react"
+import React from "react"
+import {MoveCommandButtonProps} from "./types/MoveCommandButtonProps";
 
-export function MoveCommandButton(props){
+export const MoveCommandButton: React.FC<MoveCommandButtonProps> = (props) =>{
     const {name, handleMouseDown, handleMouseUp, handleClick} = props
     return(
         <div
