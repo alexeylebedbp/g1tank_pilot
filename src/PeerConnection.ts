@@ -17,7 +17,6 @@ export class WebRtcPeerConnectionImpl implements WebRtcPeerConnection{
         this.transport = transport
     }
 
-
     onAnswer(serverSdp: string) {
         if (this.peerConnection) {
             this._clearTimeout()

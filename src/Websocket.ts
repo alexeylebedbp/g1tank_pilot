@@ -7,10 +7,6 @@ export function useSocket(){
     const [socket, setSocket] = useState<WebSocket | undefined>(undefined)
     const [socketConnected, setSocketConnected] =  useState(false)
 
-    const _send = (message: Object) => {
-        socket!.send(JSON.stringify(message))
-    }
-
     const _cleanup = (onMessageCallback: WSCallback) => {
         setSocketConnected(false)
         setSocket(undefined)
@@ -24,13 +20,13 @@ export function useSocket(){
             clearTimeout(timeout)
             resolve()
             setSocketConnected(true)
-            _send({
+            socket.send(JSON.stringify({
                 action: wsConst.outMessages.auth_session,
                 pilot_id: wsConst.pilot_id
-            })
-            _send({
+            }))
+            socket.send(JSON.stringify({
                 action: wsConst.outMessages.webrtc_can_answer
-            })
+            }))
         }
 
         socket.onmessage = (event) => {
