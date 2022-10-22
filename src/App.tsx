@@ -7,7 +7,7 @@ import {ExtendedWebSocket, WebRtcPeerConnection} from "./types/PeerConnectionTyp
 import {KeyboardController} from  "./KeyboardController"
 import {WebRTCOffer, WebRTCRemoteIce, WSMessage} from "./types/TransportTypes"
 import './css/App.css'
-import {wsConst} from "./credentials"
+import {constants} from "./credentials"
 
 const App: React.FC = () => {
     const {connectSocket, socket, socketConnected} = useSocket()
@@ -22,22 +22,22 @@ const App: React.FC = () => {
 
     const onTransportMessage = (message: WSMessage, transport?: ExtendedWebSocket) => {
         switch (message.action) {
-            case wsConst.inMessages.car_control_obtained:
+            case constants.inMessages.car_control_obtained:
                 onTransportCarControlObtained(transport!)
                 break
-            case wsConst.inMessages.failed_to_obtain_car_control:
+            case constants.inMessages.failed_to_obtain_car_control:
                 onTransportControlFailed()
                 break
-            case wsConst.inMessages.close:
+            case constants.inMessages.close:
                 onTransportClose()
                 break
-            case wsConst.inMessages.car_disconnected:
+            case constants.inMessages.car_disconnected:
                 setCarConnected(false)
                 break
-            case wsConst.inMessages.webrtc_offer:
+            case constants.inMessages.webrtc_offer:
                 onTransportWebRTCOffer(message, transport!)
                 break
-            case  wsConst.inMessages.offer_ice:
+            case  constants.inMessages.offer_ice:
                 onTransportWebRTCIce(message, transport!)
                 break
             default:
@@ -80,8 +80,8 @@ const App: React.FC = () => {
     const onTransportCarControlObtained = (transport: ExtendedWebSocket) => {
         setCarConnected(true)
         transport.send(JSON.stringify({
-            action: wsConst.outMessages.offer_request,
-            pilot_id: wsConst.pilot_id
+            action: constants.outMessages.offer_request,
+            pilot_id: constants.pilot_id
         }))
     }
 
@@ -91,10 +91,10 @@ const App: React.FC = () => {
         const remoteSDP = m.sdp
         transport.peerConnection.answer(remoteSDP).then((answer: RTCSessionDescription | null) => {
             answer && transport.send(JSON.stringify({
-                action: wsConst.outMessages.webrtc_answer,
+                action: constants.outMessages.webrtc_answer,
                 sdp: answer.sdp,
                 type: answer.type,
-                pilot_id: wsConst.pilot_id
+                pilot_id: constants.pilot_id
             }))
             setPeerConnection(transport.peerConnection)
         })
@@ -112,7 +112,7 @@ const App: React.FC = () => {
 
     const stopServer = () => {
         if(socket){
-            socket.send(JSON.stringify({action: "byebye", pilot_id: wsConst.pilot_id}))
+            socket.send(JSON.stringify({action: "byebye", pilot_id: constants.pilot_id}))
             peerConnection &&
             peerConnection.cleanup()
             setPeerConnection(undefined)
@@ -122,9 +122,9 @@ const App: React.FC = () => {
     const getCarControl = useCallback(() => {
         socket &&
         socket.send(JSON.stringify({
-            action: wsConst.outMessages.get_car_control,
-            car_id: wsConst.car_id,
-            pilot_id: wsConst.pilot_id
+            action: constants.outMessages.get_car_control,
+            car_id: constants.car_id,
+            pilot_id: constants.pilot_id
         }))
     }, [socket])
 

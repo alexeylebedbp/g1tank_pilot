@@ -1,4 +1,4 @@
-export const wsConst = {
+export const constants = {
     address: "ws://10.0.0.250:8081",
     addressTest: "ws://localhost:8000",
     pilot_id: "811BF759-11DE-4729-83B2-3408B80208C5",

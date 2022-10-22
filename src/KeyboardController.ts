@@ -1,4 +1,4 @@
-import {wsConst} from "./credentials";
+import {constants} from "./credentials";
 import {MoveEvent, KeyboardArrowEvent} from "./types/KeyboardControllerTypes";
 
 export class KeyboardController {
@@ -28,9 +28,9 @@ export class KeyboardController {
         if (!e.target) return
         const target: any = e.target
         this.ws.send(JSON.stringify({
-            action: wsConst.outMessages.move,
+            action: constants.outMessages.move,
             direction: this._mapCommandToDirection(target.id),
-            pilot_id: wsConst.pilot_id
+            pilot_id: constants.pilot_id
         }))
     }
 
@@ -67,12 +67,12 @@ export class KeyboardController {
             if (this.ws) {
                 console.log("Sending move command:", command)
                 this.ws.send(JSON.stringify({
-                    action: wsConst.outMessages.move,
+                    action: constants.outMessages.move,
                     direction: this._mapCommandToDirection(command),
-                    pilot_id: wsConst.pilot_id
+                    pilot_id: constants.pilot_id
                 }))
             }
-        }, 1000/wsConst.frequency)
+        }, 1000/constants.frequency)
     }
 
     _send = (command: MoveEvent) => {

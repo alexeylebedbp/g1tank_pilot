@@ -1,4 +1,4 @@
-import {wsConst} from "./credentials"
+import {constants} from "./credentials"
 import {WebRtcPeerConnection, IceCandidate} from './types/PeerConnectionTypes'
 import {sendStreamToCanvas} from "./Canvas";
 import {WebRTCRemoteIce} from "./types/TransportTypes";
@@ -28,7 +28,7 @@ export class WebRtcPeerConnectionImpl implements WebRtcPeerConnection{
     onLocalIceCandidate(candidate: RTCIceCandidate | null) {
         if(candidate){
             this.transport.send(JSON.stringify({
-                action: wsConst.outMessages.answer_ice,
+                action: constants.outMessages.answer_ice,
                 candidate: candidate
             }))
         }

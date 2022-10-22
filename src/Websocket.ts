@@ -1,5 +1,5 @@
 import {useState} from "react"
-import {wsConst} from "./credentials"
+import {constants} from "./credentials"
 import {WSCallback} from "./types/TransportTypes"
 import {ExtendedWebSocket} from "./types/PeerConnectionTypes";
 
@@ -14,25 +14,25 @@ export function useSocket(){
     }
 
     const _connect = (onMessageCallback: WSCallback, timeout: NodeJS.Timeout, resolve: any) => {
-        const socket = new WebSocket(wsConst.address)
+        const socket = new WebSocket(constants.address)
         socket.onopen = (event) => {
             console.log("Socket Connected", socket)
             clearTimeout(timeout)
             resolve()
             setSocketConnected(true)
             socket.send(JSON.stringify({
-                action: wsConst.outMessages.auth_session,
-                pilot_id: wsConst.pilot_id
+                action: constants.outMessages.auth_session,
+                pilot_id: constants.pilot_id
             }))
             socket.send(JSON.stringify({
-                action: wsConst.outMessages.webrtc_can_answer
+                action: constants.outMessages.webrtc_can_answer
             }))
         }
 
         socket.onmessage = (event) => {
-            if(event.data === wsConst.inMessages.ping){
-                socket.send(wsConst.outMessages.pong);
-            } else if(event.data === wsConst.inMessages.red){
+            if(event.data === constants.inMessages.ping){
+                socket.send(constants.outMessages.pong);
+            } else if(event.data === constants.inMessages.red){
                 console.warn("Poor network detected")
             } else {
                 const message = JSON.parse(event.data)
