@@ -17,7 +17,7 @@ export const constants = {
     },
     inMessages: {
         ping: "__ping__",
-        red: "red",
+        poor_network: "poor_network_detected",
         car_control_obtained: "car_control_obtained",
         failed_to_obtain_car_control: "failed_to_obtain_car_control",
         car_disconnected: "car_disconnected",

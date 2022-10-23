@@ -30,13 +30,18 @@ export function useSocket(){
         }
 
         socket.onmessage = (event) => {
+            console.log("Incoming:", event.data)
             if(event.data === constants.inMessages.ping){
                 socket.send(constants.outMessages.pong);
-            } else if(event.data === constants.inMessages.red){
+            } else if(event.data === constants.inMessages.poor_network){
                 console.warn("Poor network detected")
             } else {
-                const message = JSON.parse(event.data)
-                onMessageCallback(message, socket as ExtendedWebSocket)
+                try {
+                    const message = JSON.parse(event.data)
+                    onMessageCallback(message, socket as ExtendedWebSocket)
+                } catch (e){
+                    console.error(e)
+                }
             }
         }
 
