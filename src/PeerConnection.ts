@@ -42,7 +42,7 @@ export class WebRtcPeerConnectionImpl implements WebRtcPeerConnection{
     answer(serverSdp: string): Promise<RTCSessionDescription | null> {
         this.cleanup()
         return new Promise((resolve, reject) => {
-            this._setTimeout('answerCall', reject)
+            //this._setTimeout('answerCall', reject)
             this.peerConnection = new RTCPeerConnection()
 
             this.peerConnection.onicecandidate = (e: RTCPeerConnectionIceEvent) => {

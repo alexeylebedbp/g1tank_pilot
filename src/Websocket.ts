@@ -30,7 +30,6 @@ export function useSocket(){
         }
 
         socket.onmessage = (event) => {
-            console.log("Incoming:", event.data)
             if(event.data === constants.inMessages.ping){
                 socket.send(constants.outMessages.pong);
             } else if(event.data === constants.inMessages.poor_network){
