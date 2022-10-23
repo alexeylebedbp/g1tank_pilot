@@ -10,7 +10,6 @@ export interface IceCandidate {
 
 
 export interface WebRtcPeerConnection {
-    onAnswer(serverSdp: string): void
     answer(serverSdp: string): Promise<RTCSessionDescription | null>
     onRemoteIceCandidate(iceCandidate: WebRTCRemoteIce): void
     onLocalIceCandidate(c: RTCIceCandidate | null):void
