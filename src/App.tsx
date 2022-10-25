@@ -112,7 +112,7 @@ const App: React.FC = () => {
 
     const stopServer = () => {
         if(socket){
-            socket.send(JSON.stringify({action: "byebye", pilot_id: constants.pilot_id}))
+            socket.send(JSON.stringify({action: constants.outMessages.byebye, pilot_id: constants.pilot_id}))
             peerConnection &&
             peerConnection.cleanup()
             setPeerConnection(undefined)
