@@ -96,7 +96,7 @@ export class KeyboardController {
     }
 
     _onUp = (e: React.MouseEvent<HTMLDivElement> | {target: {id: MoveEvent}} | null) => {
-        if (!e || e.target) return
+        if (!e || !e.target) return
         const target: any = e.target
         if (target.id === "left") {
             this.leftBtnStateReporter && clearInterval(this.leftBtnStateReporter)
